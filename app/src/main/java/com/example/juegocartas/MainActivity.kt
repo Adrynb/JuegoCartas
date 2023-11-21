@@ -3,10 +3,15 @@ package com.example.juegocartas
 import Adapter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toolbar
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -19,7 +24,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.layoutManager = GridLayoutManager(this, 4)
+
+
+
 
         val categoryAnimals = Category(CategoryType.ANIMALS, "Animals", createAnimalItems())
         val categoryFood = Category(CategoryType.FOOD, "Food", createFoodItems())
@@ -79,31 +87,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        getMenuInflater().inflate(com.example.juegocartas.R.menu.menucartas, menu);
-        return super.onCreateOptionsMenu(menu);
+        menuInflater.inflate(R.menu.menucartas, menu)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.categoryAnimals -> loadCategory(CategoryType.ANIMALS)
-            R.id.categoryFruits -> loadCategory(CategoryType.FOOD)
-            R.id.categoryTransports -> loadCategory(CategoryType.OTHER)
-
+        val categoryType = when (item.itemId) {
+            R.id.categoryAnimals -> CategoryType.ANIMALS
+            R.id.categoryFruits -> CategoryType.FOOD
+            R.id.categoryTransports -> CategoryType.OTHER
+            else -> return super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
+
+        loadCategory(categoryType)
+        return true
     }
+
 
     private fun loadCategory(categoryType: CategoryType) {
         val selectedCategory = categories.find { it.type == categoryType }
 
         if (selectedCategory != null) {
             val data = selectedCategory.items
+            Log.d("LoadCategory", "Category: ${selectedCategory.name}, Items: ${data.size}")
             val adapter = Adapter(this, data)
             recyclerView.adapter = adapter
+            adapter.notifyDataSetChanged()
+        }
+        else{
+            Log.d("Error", "No se detecta  la categoria")
         }
     }
 
-    private fun getCategoryItems(categoryType: CategoryType): List<Item> {
-        return categories.firstOrNull { it.type == categoryType }?.items ?: emptyList()
-    }
 }
